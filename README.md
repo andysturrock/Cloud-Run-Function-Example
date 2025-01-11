@@ -26,3 +26,21 @@ Run the deploy script using:
 ./buildAndDeployDockerImage.sh
 ```
 
+## Testing the function
+Get the access token for your currently logged in user using the gcloud cli:
+```shell
+TOKEN=`gcloud auth print-identity-token`
+```
+
+Then you can use that token as a Bearer token in the Authorization header.  To use curl:
+```shell
+curl -X GET \
+  'https://hello-7hjk8vgh.nw.gateway.dev/hello?name=World' \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+or wget:
+```shell
+wget --header="Authorization: Bearer ${TOKEN}" \
+    'https://hello-7hjk8vgh.nw.gateway.dev/hello?name=World' \
+     -O - | more
+```

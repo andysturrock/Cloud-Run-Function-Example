@@ -14,15 +14,7 @@ resource "google_cloud_run_v2_service" "hello" {
       max_instance_count = 100
     }
     containers {
-      image = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_name}/hello/${var.cloudrun_container_id}"
-      env {
-        name  = "GCP_PROJECT_ID"
-        value = var.gcp_project_name
-      }
-      env {
-        name  = "LOG_DEBUG"
-        value = "true"
-      }
+      image   = "${var.gcp_region}-docker.pkg.dev/${var.gcp_project_name}/hello/${var.cloudrun_container_id}"
       command = ["/app/hello"]
       startup_probe {
         failure_threshold     = 1

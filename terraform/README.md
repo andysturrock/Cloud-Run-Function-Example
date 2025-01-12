@@ -2,12 +2,48 @@
 
 ## Before starting
 
+In all the instructions below, substitute `gcp-project-name` for the name of your project.
+
+### Create Terraform service account
+Create a `.env` file in the top level directory which should look like this:
+```shell
+GCP_REGION="europe-west2"
+GCP_PROJECT_ID="gcp-project-name"
+```
+Create service account in your GCP project for running Terraform using the [createTerraformServiceAccount.sh](./createTerraformServiceAccount.sh) script.  The script will have  so its email address is something like `hello-terraform@gcp-project-name.iam.gserviceaccount.com`.
+
+The script will create the service account and its last line of output should look something like:
+```
+Service account hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com is ready for use.
+```
+
+Note that each time the script is run a new service account and role will be created.  The number like `1736692837` will change (it's the Unix timestamp from when the script runs).  This is because GCP soft-deletes roles so their names must be unique when you create a new one.
+
+Edit the `.env` file to add the service account:
+```shell
+GCP_REGION="europe-west2"
+GCP_PROJECT_ID="gcp-project-name"
+TERRAFORM_SERVICE_ACCOUNT="hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com"
+```
+
+### Initialise Terraform
 Create a bucket in your GCP project to hold Terraform state.  Call it something like `gcp-project-name-tfstate` so it is globally unique.
 
+Delete any previous Terraform config:
+```shell
+rm -rf .terraform .terraform.lock.hcl
+```
 Add the bucket name to the `hello.tfbackend` file which should then look like:
 ```
-bucket = "prj-i-swift-shark-d56e-tfstate"
+bucket = "gcp-project-name-tfstate"
 prefix = "terraform/hello/state"
+```
+
+Login and set your GCloud local credentials by running:
+```shell
+gcloud config unset auth/impersonate_service_account
+gcloud auth application-default login
+gcloud config set project gcp-project-name
 ```
 
 Then init Terraform by running:
@@ -15,11 +51,16 @@ Then init Terraform by running:
 terraform init
 ```
 
-Create service account in your GCP project for running Terraform.  Call it something like `hello-terraform` so its email address is something like `hello-terraform@gcp-project-name.iam.gserviceaccount.com`.
+Ensure that your account has `Service Account Token Creator` in GCP IAM so you can impersonate the Terraform service account.  Set your login to impersonate the Terraform service account:
+```shell
+gcloud config set auth/impersonate_service_account hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com
+```
+
+### Run Terraform
 
 Add the service account name to the `terraform.tfvars` file which should then look like:
 ```terraform
-terraform_service_account = "hello-terraform@gcp-project-name.iam.gserviceaccount.com"
+terraform_service_account = "hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com"
 gcp_project_name          = "gcp-project-name"
 gcp_region                = "europe-west2"
 cloudrun_container_id     = "hello:latest"
@@ -28,21 +69,16 @@ api_gateway_id            = "hello"
 ```
 Change the GCP region as required.
 
-Create a role for the Terraform service account.  Call it something like `Hello Terraform`.  It should have the following permissions:
-```
-```
-
-Ensure that your account has `Service Account Token Creator` in GCP IAM so you can impersonate the Terraform service account.
-Login and set service account impersonation on your GCloud local credentials by running:
-```shell
-gcloud auth login
-gcloud config set auth/impersonate_service_account hello-terraform@gcp-project-name.iam.gserviceaccount.com
-```
-
 Run the Terraform to create everything:
 ```shell
 terraform apply -auto-approve
 ```
+
+You may get errors about APIs not being enabled, something like:
+```shell
+ Error: Error creating Api: googleapi: Error 403: API Gateway API has not been used in project gcp-project-name before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/apigateway.googleapis.com/overview?project=gcp-project-name then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.
+```
+As the message suggests, wait a minute or two and then rerun the `terraform apply` command.
 
 The first time you run the Terraform apply command it will fail as there will be no Docker image in the Artifact repository.  The error will look something like:
 ```
@@ -58,7 +94,7 @@ The first time you run the Terraform apply command it will fail as there will be
 
 To fix this follow the instructions in the [top level README.md](../README.md) and use the [deploy script](../buildAndDeployDockerImage.sh) to build and deploy an image.  Then run `terraform apply` again.
 
-Creating the API Gateway parts can take several minutes - eg:
+Note that creating the API Gateway parts can take several minutes - eg:
 
 ```
 google_api_gateway_api.hello: Still creating... [1m40s elapsed]
@@ -73,3 +109,26 @@ google_api_gateway_gateway.hello: Still creating... [2m10s elapsed]
 google_api_gateway_gateway.hello: Creation complete after 2m13s [id=projects/my-gcp-project/locations/europe-west2/gateways/hello]
 ```
 
+### Set the backend address in [hello.yaml](./hello.yaml)
+Use this command to find the URL of the Cloud Run Service that has been created:
+```shell
+gcloud run services list \
+--project=gcp-project-name \
+--platform=managed \
+--format="table(name, status.url)"
+```
+The output should look something like:
+```
+NAME   URL
+hello  https://hello-abc123-nw.a.run.app
+```
+Edit the `x-google-backend` section of [hello.yaml](./hello.yaml) so it reflects the value returned above:
+```yaml
+x-google-backend:
+  address: https://hello-abc123.europe-west2.run.app
+```
+
+Re-run the `terraform apply -auto-approve` command again to set the value in the API Gateway.
+
+### Deploy new versions of the service
+If you change the code for the service you can redeploy your new version by re-running the the [deploy script](../buildAndDeployDockerImage.sh).

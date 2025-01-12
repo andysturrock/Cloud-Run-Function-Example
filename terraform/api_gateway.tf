@@ -11,7 +11,6 @@ resource "google_api_gateway_api_config" "hello" {
   project      = var.gcp_project_name
   display_name = var.api_display_name
 
-
   openapi_documents {
     document {
       path     = "hello.yaml"

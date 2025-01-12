@@ -4,8 +4,8 @@
 Create a `.env` file which looks like this:
 ```shell
 GCP_REGION="europe-west2"
-GCP_PROJECT_ID="gcp-project_id"
-TERRAFORM_SERVICE_ACCOUNT=hello-terraform@gcp-project-id.iam.gserviceaccount.com
+GCP_PROJECT_ID="gcp-project-name"
+TERRAFORM_SERVICE_ACCOUNT=hello-terraform-123@gcp-project-name.iam.gserviceaccount.com
 ```
 The value of the TERRAFORM_SERVICE_ACCOUNT variable should be the Terraform service account which is described in [./terraform/README.md](./terraform/README.md).
 
@@ -29,7 +29,7 @@ Run the deploy script using:
 ## Testing the function
 Set the environment variable GCP_PROJECT_ID in your current shell:
 ```shell
-GCP_PROJECT_ID="gcp-project_id"
+GCP_PROJECT_ID="gcp-project-name"
 ```
  
 Find the URL of the gateway using this command:

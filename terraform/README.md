@@ -23,7 +23,7 @@ Edit the `.env` file to add the service account:
 ```shell
 GCP_REGION="europe-west2"
 GCP_PROJECT_ID="gcp-project-name"
-TERRAFORM_SERVICE_ACCOUNT="hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com"
+TERRAFORM_SERVICE_ACCOUNT="hello-terraform-1736692837@${GCP_PROJECT_ID}.iam.gserviceaccount.com"
 ```
 
 ### Initialise Terraform
@@ -39,11 +39,16 @@ bucket = "gcp-project-name-tfstate"
 prefix = "terraform/hello/state"
 ```
 
+Pull in the values from the .env file into your current shell:
+```shell
+. ../.env
+```
+
 Login and set your GCloud local credentials by running:
 ```shell
 gcloud config unset auth/impersonate_service_account
 gcloud auth application-default login
-gcloud config set project gcp-project-name
+gcloud config set project ${GCP_PROJECT_ID}
 ```
 
 Then init Terraform by running:
@@ -53,7 +58,7 @@ terraform init
 
 Ensure that your account has `Service Account Token Creator` in GCP IAM so you can impersonate the Terraform service account.  Set your login to impersonate the Terraform service account:
 ```shell
-gcloud config set auth/impersonate_service_account hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com
+gcloud config set auth/impersonate_service_account ${TERRAFORM_SERVICE_ACCOUNT}
 ```
 
 ### Run Terraform
@@ -109,26 +114,12 @@ google_api_gateway_gateway.hello: Still creating... [2m10s elapsed]
 google_api_gateway_gateway.hello: Creation complete after 2m13s [id=projects/my-gcp-project/locations/europe-west2/gateways/hello]
 ```
 
-### Set the backend address in [hello.yaml](./hello.yaml)
-Use this command to find the URL of the Cloud Run Service that has been created:
+### Terraform errors
+You might get an error saying the `google_cloud_run_v2_service.hello` service already exists.  If this is the case run this command:
 ```shell
-gcloud run services list \
---project=gcp-project-name \
---platform=managed \
---format="table(name, status.url)"
+gcloud run services delete hello --project=${GCP_PROJECT_ID} --region=${GCP_REGION}
 ```
-The output should look something like:
-```
-NAME   URL
-hello  https://hello-abc123-nw.a.run.app
-```
-Edit the `x-google-backend` section of [hello.yaml](./hello.yaml) so it reflects the value returned above:
-```yaml
-x-google-backend:
-  address: https://hello-abc123.europe-west2.run.app
-```
-
-Re-run the `terraform apply -auto-approve` command again to set the value in the API Gateway.
+Then re-run the `terraform apply -auto-approve` command again.
 
 ### Deploy new versions of the service
 If you change the code for the service you can redeploy your new version by re-running the the [deploy script](../buildAndDeployDockerImage.sh).

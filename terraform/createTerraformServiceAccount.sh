@@ -26,6 +26,7 @@ apigateway.apis.get
 apigateway.gateways.create
 apigateway.gateways.delete
 apigateway.gateways.get
+apigateway.gateways.list
 apigateway.operations.get
 artifactregistry.repositories.create
 artifactregistry.repositories.delete

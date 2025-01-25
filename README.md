@@ -27,9 +27,9 @@ Run the deploy script using:
 ```
 
 ## Testing the function
-Set the environment variable GCP_PROJECT_ID in your current shell:
+Pull in the environment variable from `.env` which will set GCP_PROJECT_ID in your current shell:
 ```shell
-GCP_PROJECT_ID="gcp-project-name"
+. ./.env
 ```
  
 Find the URL of the gateway using this command:
@@ -59,6 +59,6 @@ curl -X GET \
 or wget:
 ```shell
 wget --header="Authorization: Bearer ${TOKEN}" \
-    'https://hello-abc123.nw.gateway.dev/hello?name=World' \
-     -O - | more
+    "https://${URL}/hello?name=World" \
+     -O - | cat
 ```

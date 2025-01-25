@@ -33,11 +33,6 @@ Delete any previous Terraform config:
 ```shell
 rm -rf .terraform .terraform.lock.hcl
 ```
-Add the bucket name to the `hello.tfbackend` file which should then look like:
-```
-bucket = "gcp-project-name-tfstate"
-prefix = "terraform/hello/state"
-```
 
 Pull in the values from the .env file into your current shell:
 ```shell
@@ -55,15 +50,23 @@ Then init Terraform by running:
 ```shell
 terraform init
 ```
+Type in the name of your bucket when asked.
 
-Ensure that your account has `Service Account Token Creator` in GCP IAM so you can impersonate the Terraform service account.  Set your login to impersonate the Terraform service account:
+Ensure that your account has `Service Account Token Creator` in GCP IAM so you can impersonate the Terraform service account:
+```shell
+gcloud projects add-iam-policy-binding ${GCP_PROJECT_ID} \
+  --member="user:$(gcloud config get-value account)" \
+  --role="roles/iam.serviceAccountTokenCreator"
+```
+
+Set your login to impersonate the Terraform service account:
 ```shell
 gcloud config set auth/impersonate_service_account ${TERRAFORM_SERVICE_ACCOUNT}
 ```
 
 ### Run Terraform
 
-Add the service account name to the `terraform.tfvars` file which should then look like:
+Create a `terraform.tfvars` file with the following contents (replacing the project name and service account):
 ```terraform
 terraform_service_account = "hello-terraform-1736692837@gcp-project-name.iam.gserviceaccount.com"
 gcp_project_name          = "gcp-project-name"

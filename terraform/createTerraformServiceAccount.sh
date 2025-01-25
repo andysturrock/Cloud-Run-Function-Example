@@ -73,10 +73,6 @@ gcloud iam roles create "HelloTerraform${suffix}" \
   --stage=GA
 
 echo "Assigning role to service account..."
-# gcloud iam service-accounts add-iam-policy-binding ${GCP_PROJECT_ID} \
-#   --member="serviceAccount:hello-terraform-${suffix}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" \
-#   --role="roles/HelloTerraform${suffix}"
-
 gcloud projects add-iam-policy-binding ${GCP_PROJECT_ID} --member="serviceAccount:hello-terraform-${suffix}@${GCP_PROJECT_ID}.iam.gserviceaccount.com" --role="projects/${GCP_PROJECT_ID}/roles/HelloTerraform${suffix}"
 echo "Done."
 

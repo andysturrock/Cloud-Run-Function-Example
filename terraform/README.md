@@ -28,7 +28,7 @@ TERRAFORM_SERVICE_ACCOUNT="hello-terraform-1736692837@${GCP_PROJECT_ID}.iam.gser
 
 ### Initialise Terraform
 Create a bucket in your GCP project to hold Terraform state.  Run the following gsutil command:
-```powershell
+```shell
 gsutil mb -p ${GCP_PROJECT_ID} -l ${GCP_REGION} -c standard gs://${GCP_PROJECT_ID}-tfstate
 ```
 If you have a constraint on using CMEK for buckets the command will be something like this.  You will need to substitute the name of the keyring and key.

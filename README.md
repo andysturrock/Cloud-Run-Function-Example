@@ -65,3 +65,28 @@ wget --header="Authorization: Bearer ${TOKEN}" \
     "https://${URL}/hello?name=World" \
      -O - | cat
 ```
+
+There is also a [Python script](./test.py) provided which will call the service multiple times in parallel and time each call.  The output should look something like this:
+```
+python test.py
+1. Hello World! (215.46 ms)
+2. Hello World! (189.13 ms)
+3. Hello World! (215.67 ms)
+4. Hello World! (219.85 ms)
+5. Hello World! (208.47 ms)
+6. Hello World! (218.90 ms)
+7. Hello World! (218.82 ms)
+8. Hello World! (221.22 ms)
+9. Hello World! (213.32 ms)
+10. Hello World! (225.79 ms)
+11. Hello World! (240.56 ms)
+12. Hello World! (221.43 ms)
+13. Hello World! (225.36 ms)
+14. Hello World! (248.18 ms)
+15. Hello World! (216.12 ms)
+16. Hello World! (248.30 ms)
+17. Hello World! (248.37 ms)
+18. Hello World! (227.34 ms)
+19. Hello World! (216.38 ms)
+20. Hello World! (207.62 ms)
+```

@@ -27,7 +27,16 @@ TERRAFORM_SERVICE_ACCOUNT="hello-terraform-1736692837@${GCP_PROJECT_ID}.iam.gser
 ```
 
 ### Initialise Terraform
-Create a bucket in your GCP project to hold Terraform state.  Call it something like `gcp-project-name-tfstate` so it is globally unique.
+Create a bucket in your GCP project to hold Terraform state.  Run the following gsutil command:
+```powershell
+gsutil mb -p ${GCP_PROJECT_ID} -l ${GCP_REGION} -c standard gs://${GCP_PROJECT_ID}-tfstate
+```
+If you have a constraint on using CMEK for buckets the command will be something like this.  You will need to substitute the name of the keyring and key.
+```shell
+gsutil kms authorize -k projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/keyRings/${GCP_PROJECT_ID}-default-cmek-key-ring/cryptoKeys/default-cmek-key -p ${GCP_PROJECT_ID}
+
+gsutil mb -p ${GCP_PROJECT_ID} -l ${GCP_REGION} -c standard -k projects/${GCP_PROJECT_ID}/locations/${GCP_REGION}/keyRings/${GCP_PROJECT_ID}-default-cmek-key-ring/cryptoKeys/default-cmek-key gs://${GCP_PROJECT_ID}-tfstate
+```
 
 Delete any previous Terraform config:
 ```shell
@@ -42,7 +51,7 @@ Pull in the values from the .env file into your current shell:
 Login and set your GCloud local credentials by running:
 ```shell
 gcloud config unset auth/impersonate_service_account
-gcloud auth application-default login
+gcloud auth application-default login --project  ${GCP_PROJECT_ID}
 gcloud config set project ${GCP_PROJECT_ID}
 ```
 

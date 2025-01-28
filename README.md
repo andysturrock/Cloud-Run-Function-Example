@@ -1,26 +1,24 @@
 # Build and Deploy Instructions
 
 ## Before you start
+
+First follow the instructions in [./terraform/README.md](./terraform/README.md).
+
 Create a `.env` file which looks like this:
 ```shell
 GCP_REGION="europe-west2"
 GCP_PROJECT_ID="gcp-project-name"
 TERRAFORM_SERVICE_ACCOUNT=hello-terraform-123@gcp-project-name.iam.gserviceaccount.com
 ```
-The value of the TERRAFORM_SERVICE_ACCOUNT variable should be the Terraform service account which is described in [./terraform/README.md](./terraform/README.md).
+
+The value of the TERRAFORM_SERVICE_ACCOUNT variable should be the Terraform service account which you created in the terraform instructions. 
 
 ## Build and deploy
-Log into the GCloud CLI and set up your Application Default Credentials using:
-```shell
-gcloud auth login
-```
-
 If you are on a corporate machine using ZScaler, copy your ZScaler cert into the current directory:
 ```shell
 cp /usr/local/share/ca-certificates/zscaler.crt .     
 ```
 
-Ensure that your account has `Service Account Token Creator` in GCP IAM so you can impersonate the Terraform service account.
 Run the deploy script using:
 ```shell
 ./buildAndDeployDockerImage.sh
@@ -30,6 +28,11 @@ Run the deploy script using:
 Pull in the environment variable from `.env` which will set GCP_PROJECT_ID in your current shell:
 ```shell
 . ./.env
+```
+
+Log into the GCloud CLI using:
+```shell
+gcloud auth login
 ```
  
 Find the URL of the gateway using this command:
